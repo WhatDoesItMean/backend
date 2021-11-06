@@ -21,3 +21,20 @@ class HelloResult(object):
 
     def __init__(self, name):
         self.greetings = "Hello {}".format(name)
+
+@swagger.model
+class SendMessagesResult(object):
+    """The result of a call to /send"""
+    resource_fields = {
+        'tones': fields.List(
+            fields.Raw(
+                fields.Nested({
+                    'srs': fields.Float,
+                    'j': fields.Float,
+                })
+            )
+        )
+    }
+
+    def __init__(self, tones):
+        self.tones = tones

@@ -3,6 +3,7 @@ from flask.ext.restful import Resource, Api, marshal_with, fields, abort
 from flask_restful_swagger import swagger
 from flask_minimal.api import DummyEndpoint
 from flask_minimal.api import HelloEndpoint
+from flask_minimal.api import SendMessagesEndpoint
 
 API_VERSION_NUMBER = '1.0'
 API_VERSION_LABEL = 'v1'
@@ -26,6 +27,7 @@ class CustomFlaskApp(object):
         
         self.api.add_resource(DummyEndpoint, '/dummy', endpoint='dummy')
         self.api.add_resource(HelloEndpoint, '/hello', endpoint='hello')
+        self.api.add_resource(SendMessagesEndpoint, '/send', endpoint='send')
 
     def run(self, *args, **kwargs):
         self.app.config['PROPAGATE_EXCEPTIONS'] = False
