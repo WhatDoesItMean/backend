@@ -4,7 +4,11 @@ import random
 import subprocess
 
 def get_git_revision_short_hash() -> str:
-    return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('ascii').strip()
+    try:
+        return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('ascii').strip()
+    except subprocess.CalledProcessError as e:
+        print("Exception on process, rc=", e.returncode, "output=", e.output)
+    return "failure"
 
 app = Flask(__name__)
 cors = CORS(app)
