@@ -1,9 +1,9 @@
 from flask import Flask, request
 from flask.ext.restful import Resource, Api, marshal_with, fields, abort
 from flask_restful_swagger import swagger
-from flask_minimal.api import DummyEndpoint
-from flask_minimal.api import HelloEndpoint
-from flask_minimal.api import SendMessagesEndpoint
+from tonify.api import DummyEndpoint
+from tonify.api import HelloEndpoint
+from tonify.api import SendMessagesEndpoint
 
 API_VERSION_NUMBER = '1.0'
 API_VERSION_LABEL = 'v1'
