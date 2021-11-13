@@ -66,7 +66,7 @@ def send_messages():
     messages = request.json['messages']
     
     result = run_model(messages)
-    return result
+    return jsonify(result)
 
 def create_random_prediction():
     return {
