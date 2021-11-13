@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS, cross_origin
 import random
 import subprocess
 
@@ -6,6 +7,8 @@ def get_git_revision_short_hash() -> str:
     return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('ascii').strip()
 
 app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 API_VERSION_NUMBER = "0.1"
 TONES = [
@@ -49,12 +52,14 @@ def index():
     }
 
 @app.route('/analyze', methods=['POST'])
+@cross_origin()
 def send_messages():
     messages = request.json['messages']
     
     result = run_model(messages)
-    
-    return jsonify(result)
+    response = flask.jsonify(result)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
 def create_random_prediction():
     return {
