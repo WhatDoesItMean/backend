@@ -66,9 +66,7 @@ def send_messages():
     messages = request.json['messages']
     
     result = run_model(messages)
-    response = jsonify(result)
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
+    return result
 
 def create_random_prediction():
     return {
