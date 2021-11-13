@@ -86,6 +86,8 @@ class SendMessagesEndpoint(Resource):
             raise JsonInvalidError()
 
 def processMessages(reqs):
+    # do ML stuff here. reqs is a list of messages
+
     return [
         {'srs': 1, 'j': 0},
         {'srs': 0.5, 'j': 0.3},

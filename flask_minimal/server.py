@@ -4,6 +4,7 @@ from flask_restful_swagger import swagger
 from flask_minimal.api import DummyEndpoint
 from flask_minimal.api import HelloEndpoint
 from flask_minimal.api import SendMessagesEndpoint
+from flask_cors import CORS
 
 API_VERSION_NUMBER = '1.0'
 API_VERSION_LABEL = 'v1'
@@ -13,6 +14,7 @@ class CustomFlaskApp(object):
 
     def __init__(self):
         self.app = Flask(__name__)
+        CORS(self.app, resources={r'/*': {'origins': '*'}})
         custom_errors = {
             'JsonInvalidError': {
                 'status': 500,
