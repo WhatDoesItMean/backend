@@ -56,7 +56,7 @@ def index():
     }
 
 @app.route('/echo', methods=['POST'])
-@cross_origin
+@cross_origin()
 def echo():
     return request.json
 
