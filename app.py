@@ -55,6 +55,11 @@ def index():
         "hash": get_git_revision_short_hash()
     }
 
+@app.route('/echo', methods=['POST'])
+@cross_origin
+def echo():
+    return request.json
+
 @app.route('/analyze', methods=['POST'])
 @cross_origin()
 def send_messages():
