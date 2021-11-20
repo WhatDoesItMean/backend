@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
 import random
 import subprocess
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
 def get_git_revision_short_hash() -> str:
     try:
@@ -13,6 +14,11 @@ def get_git_revision_short_hash() -> str:
 app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
+
+model_name = 'bigscience/T0_3B'
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+print('imported model')
 
 API_VERSION_NUMBER = "0.1"
 TONES = [
@@ -68,15 +74,43 @@ def send_messages():
     result = run_model(messages)
     return jsonify(result)
 
-def create_random_prediction():
-    return {
-        tone: random.random()
-        for tone in TONES
-    }
+def predict_tone(message):
+    prompt_emotion = "Which emotion among anger, joy, optimism, sadness is best represented by the following tweet?"
+    # labels = ['anger', 'joy', 'optimism', 'sadness']
+    prompt_irony = "Does this tweet contain irony?"
+    # labels_irony = ['no', 'yes']
+    prompt_sentiment = "What sentiment does this tweet convey?"
+    # labels_sentiment = ["negative", "neutral", "positive"]
+    prompts = [prompt_emotion, prompt_irony, prompt_sentiment]
 
+    output_labels = []
+    for prompt in prompts:
+        input_text = prompt + ' ' + message
+        inputs = tokenizer.encode(input_text, return_tensors="pt")
+        outputs = model.generate(inputs)
+        output_label = tokenizer.decode(outputs[0][1]) # ignore the 1st and last token, which are pads
+        output_labels.append(output_label)
+    
+    return map_to_tone(output_labels)
+
+def map_to_tone(labels):
+    emotion, irony, sentiment = labels
+    if irony == 'yes':
+        if sentiment == 'positive':
+            return 'j'
+        elif sentiment == 'neutral':
+            return 'hj'
+        return 's'
+    
+    if sentiment == 'positive':
+        return 'pos'
+    elif sentiment == 'neutral':
+        return 'neu'
+    return 's'
+    
 def run_model(messages):
     return [
-        create_random_prediction()
+        predict_tone(message)
         for message in messages
     ]
 
