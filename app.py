@@ -69,10 +69,7 @@ def send_messages():
     return jsonify(result)
 
 def create_random_prediction():
-    return {
-        tone: random.random()
-        for tone in TONES
-    }
+    return random.choice(TONES)
 
 def run_model(messages):
     return [
