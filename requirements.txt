@@ -3,3 +3,7 @@ python-dotenv
 gunicorn
 flask_cors
 six
+transformers
+sentencepiece
+protobuf
+torch

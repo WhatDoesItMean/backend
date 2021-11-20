@@ -2,7 +2,12 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
 import random
 import subprocess
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+import requests
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 def get_git_revision_short_hash() -> str:
     try:
@@ -15,10 +20,19 @@ app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
-model_name = 'bigscience/T0_3B'
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-print('imported model')
+# model_name = 'bigscience/T0_3B'
+# tokenizer = AutoTokenizer.from_pretrained(model_name)
+# model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+# print('imported model')
+
+API_URL = "https://api-inference.huggingface.co/models/bigscience/T0pp"
+headers = {"Authorization": f"Bearer {os.getenv('HUGGING_FACE_TOKEN')}"}
+
+print(API_URL, headers)
+
+def t0pp_query(payload):
+	response = requests.post(API_URL, headers=headers, json=payload)
+	return response.json()
 
 API_VERSION_NUMBER = "0.1"
 TONES = [
@@ -74,39 +88,36 @@ def send_messages():
     result = run_model(messages)
     return jsonify(result)
 
-def predict_tone(message):
-    prompt_emotion = "Which emotion among anger, joy, optimism, sadness is best represented by the following tweet?"
+def predict_tone(msg):
+    prompt_emotion = "Which sentiment among positive, negative, neutral, joking is best represented by the following tweet?"
     # labels = ['anger', 'joy', 'optimism', 'sadness']
-    prompt_irony = "Does this tweet contain irony?"
-    # labels_irony = ['no', 'yes']
-    prompt_sentiment = "What sentiment does this tweet convey?"
-    # labels_sentiment = ["negative", "neutral", "positive"]
-    prompts = [prompt_emotion, prompt_irony, prompt_sentiment]
+    # prompt_irony = "Does this tweet contain irony?"
+    # # labels_irony = ['No', 'Yes']
+    # prompt_sentiment = "What sentiment does this tweet convey?"
+    # # labels_sentiment = ["negative", "neutral", "positive"]
+    prompts = [prompt_emotion]
+
+    print(msg)
 
     output_labels = []
     for prompt in prompts:
-        input_text = prompt + ' ' + message
-        inputs = tokenizer.encode(input_text, return_tensors="pt")
-        outputs = model.generate(inputs)
-        output_label = tokenizer.decode(outputs[0][1]) # ignore the 1st and last token, which are pads
-        output_labels.append(output_label)
+        input_text = prompt + ' ' + msg["message"]
+        output = t0pp_query({"inputs": input_text })[0]["generated_text"]
+        output_labels.append(output)
     
-    return map_to_tone(output_labels)
+    resulting_tone = map_to_tone(output_labels)
+
+    print("> ", resulting_tone)
+    return resulting_tone
 
 def map_to_tone(labels):
-    emotion, irony, sentiment = labels
-    if irony == 'yes':
-        if sentiment == 'positive':
-            return 'j'
-        elif sentiment == 'neutral':
-            return 'hj'
-        return 's'
-    
+    sentiment, = labels
+    print(sentiment)
     if sentiment == 'positive':
         return 'pos'
-    elif sentiment == 'neutral':
-        return 'neu'
-    return 's'
+    elif sentiment == 'negative':
+        return 'neg'
+    return 'neu'
     
 def run_model(messages):
     return [
